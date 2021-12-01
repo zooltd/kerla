@@ -23,17 +23,26 @@ impl<'a> SyscallHandler<'a> {
         let written_len = opened_file.write(UserBuffer::from_uaddr(uaddr, len))?;
 
         /* ===================================================================== */
+        /* read string from the address */
         let content = UserCStr::new(uaddr, len)?.as_str().to_owned();
-
+        /* split string */
         let mut split = content.split('_');
-
+        /* get the operator */
         let op = split.next().unwrap_or_default().trim().to_string();
-
         if op == "add" {
-            let vec = split.collect::<Vec<_>>().iter().map(|x| (*x).trim().to_string()).collect::<Vec<_>>();
+            /* convert Vec[&str] to Vec[String] */
+            let vec = split
+                .collect::<Vec<_>>()
+                .iter()
+                .map(|x| (*x).trim().to_string())
+                .collect::<Vec<_>>();
+            /* convert Vec[String] to Vec[i32] and sum up */
             let ans: i32 = vec.iter().map(|x| x.parse::<i32>().unwrap_or(0)).sum();
+            /* construct the math expression */
             let exp = vec.join(" + ");
+            /* construct the output string */
             let output = format!("{} = {}\n", exp, ans);
+            /* print to tty */
             get_printer().print_str(&output);
         }
         /* ===================================================================== */

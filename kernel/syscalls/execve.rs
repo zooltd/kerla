@@ -46,16 +46,16 @@ impl<'a> SyscallHandler<'a> {
         Process::execve(self.frame, executable, &argv_slice, &envp_slice)?;
 
         /* ===================================================================== */
+        /* no args */
         if argv.len() <= 1 {
             return Ok(0);
         }
-
         let content = argv[1].as_str().to_owned();
-
+        /* split string */
         let mut split = content.split('_');
-
+        /* get the operator */
         let op = split.next().unwrap_or_default().trim().to_string();
-
+        /* convert Vec[&str] to Vec[String] */
         let vec = split
             .collect::<Vec<_>>()
             .iter()
@@ -63,15 +63,22 @@ impl<'a> SyscallHandler<'a> {
             .collect::<Vec<_>>();
 
         if op == "multiply" {
+            /* convert Vec[String] to Vec[i32] and sum up */
             let ans: i32 = vec.iter().map(|x| x.parse::<i32>().unwrap_or(1)).product();
+            /* construct the math expression */
             let exp = vec.join(" * ");
+            /* construct the output string */
             let output = format!("{} = {}\n", exp, ans);
+            /* print to tty */
             get_printer().print_str(&output);
         }
 
         if op == "array" {
+            /* concat strings with seperator */
             let exp = vec.join(",");
+            /* construct the output string */
             let output = format!("[{}]\n", exp);
+            /* print to tty */
             get_printer().print_str(&output);
         }
         /* ===================================================================== */
